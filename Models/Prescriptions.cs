@@ -22,7 +22,7 @@ namespace Models
         (1, 1, '2025-02-20'),
         (2, 2, '2025-02-21'),
         (3, 3, '2025-02-22');";
-        public Prescriptions(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Prescriptions(SqlConnection connection) : base("prescriptions", tableQuery, tableValuesQuery, connection)
         {
         }
     }

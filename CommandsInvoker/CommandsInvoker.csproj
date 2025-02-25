@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommandsInvoker\CommandsInvoker.csproj" />
-    <ProjectReference Include="..\DatabaseInvoker\DatabaseInvoker.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
   </ItemGroup>
 
 </Project>

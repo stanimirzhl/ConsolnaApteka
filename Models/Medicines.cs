@@ -27,7 +27,7 @@ namespace Models
         ('Vitamin C', 'Vitamin supplement for immunity', 7.99, 150, 3, 3), 
         ('Paracetamol', 'Pain reliever for mild to moderate pain', 8.99, 120, 1, 1), 
         ('Cough Syrup', 'Cough suppressant for cold and flu', 12.49, 80, 4, 2);";
-        public Medicines(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Medicines(SqlConnection connection) : base("medicines", tableQuery, tableValuesQuery, connection)
         {
         }
     }

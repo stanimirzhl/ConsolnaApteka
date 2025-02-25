@@ -23,7 +23,7 @@ namespace Models
         ('Alice Cooper', '1985-03-15', 'alice@domain.com', '08555111223'),
         ('Bob Marley', '1992-07-25', 'bob.marley@domain.com', '+359555555123'),
         ('Charlie Brown', '2000-01-05', 'charlie@domain.com', '08555222334');";
-        public Patients(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Patients(SqlConnection connection) : base("patients", tableQuery, tableValuesQuery, connection)
         {
         }
     }

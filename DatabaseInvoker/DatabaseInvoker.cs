@@ -5,7 +5,7 @@ namespace Database
 {
     public class DatabaseInvoker
     {
-        public static void CreateDb(string databaseName)
+        public static void CreateDb(string databaseName, bool flag)
         {
             string masterConnectionString = @"Server=(localdb)\ProjectModels;Database=master;Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;";
 
@@ -15,8 +15,16 @@ namespace Database
 
                 if (DatabaseExists(masterConnection, databaseName))
                 {
-                    Console.WriteLine("Database already exists, use that one!" + "\n");
+                    if (flag)
+                    {
+                        Console.WriteLine("Database already exists, use that one!" + "\n");
+                        return;
+                    }
                     return;
+                }
+                if (!flag)
+                {
+                    Console.WriteLine("Database didn't exist so i created it for you ;)");
                 }
                 string createDatabaseQuery = $"CREATE DATABASE {databaseName}";
                 ExecuteQuery(masterConnection, createDatabaseQuery);

@@ -20,7 +20,7 @@ namespace Models
         (1,'2025-02-20'), 
         (2,'2025-02-21'), 
         (3,'2025-02-22');";
-        public Sales(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Sales(SqlConnection connection) : base("sales", tableQuery, tableValuesQuery, connection)
         {
         }
     }

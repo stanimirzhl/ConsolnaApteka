@@ -6,14 +6,17 @@ namespace Models
     {
         private string tableQuery;
         private string tableValuesQuery;
+        private string tableName;
 
-        public BaseModel(string tableQuery, string tableValuesQuery, SqlConnection connection)
+        public BaseModel(string tableName,string tableQuery, string tableValuesQuery, SqlConnection connection)
         {
             this.tableQuery = tableQuery;
             this.tableValuesQuery = tableValuesQuery;
+            this.tableName = tableName;
 
             this.CreateTable(connection);
             this.InsertData(connection);
+            Console.WriteLine($"Table {this.tableName} has been successfully created and values has been inserted." + "\n");
         }
 
         private void CreateTable(SqlConnection connection)

@@ -25,7 +25,7 @@ namespace Models
         (1, 2, '500mg', 1), 
         (2, 3, '250mg', 3),
         (3, 4, '500mg', 2);";
-        public Prescription_Medicines(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Prescription_Medicines(SqlConnection connection) : base("prescription_medicines", tableQuery, tableValuesQuery, connection)
         {
         }
     }

@@ -21,7 +21,7 @@ namespace Models
         ('Dr. John Doe', 'Cardiologist', 'johndoe@hospital.com', '+359123987654'),
         ('Dr. Jane Smith', 'General Practitioner', 'janesmith@clinic.com', '08555333123'),
         ('Dr. Emily Johnson', 'Neurologist', 'emily.johnson@neuroclinic.com', '08987654321');";
-        public Doctors(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Doctors(SqlConnection connection) : base("doctors", tableQuery, tableValuesQuery, connection)
         {
         }
     }

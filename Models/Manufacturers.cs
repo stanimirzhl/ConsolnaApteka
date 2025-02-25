@@ -21,7 +21,7 @@ namespace Models
         ('PharmaCorp', 'http://pharmacorp.com', 'contact@pharmacorp.com', '+359123456789'),
         ('MediTech', 'http://mediatech.com', 'info@mediatech.com', '08987654321'),
         ('HealthPlus', 'http://healthplus.com', 'support@healthplus.com', '08555123456');";
-        public Manufacturers(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Manufacturers(SqlConnection connection) : base("manufacturers", tableQuery, tableValuesQuery, connection)
         {
         }
     }

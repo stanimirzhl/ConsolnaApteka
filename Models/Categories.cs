@@ -22,7 +22,7 @@ namespace Models
         ('Cold and Flu', 'Medications for treating cold and flu symptoms'),
         ('Topical', 'Medications applied to the skin');";
 
-        public Categories(SqlConnection connection) : base(tableQuery, tableValuesQuery, connection)
+        public Categories(SqlConnection connection) : base("categories",tableQuery, tableValuesQuery, connection)
         {
         }
     }
