@@ -108,7 +108,7 @@ namespace ConsoleInterface
                         DateTime endDate;
                         while (dateRange.Length != 2 || !DateTime.TryParseExact(dateRange[0], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDate) || !DateTime.TryParseExact(dateRange[1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out endDate) || startDate > endDate)
                         {
-                            Console.WriteLine("Invalid format. Please use the correct format: yyyy-MM-dd, yyyy-MM-dd");
+                            Console.WriteLine("Invalid format. Please use the correct format: yyyy-MM-dd, yyyy-MM-dd, or first type the earlier date");
                             dateRange = Console.ReadLine().Split(", ", StringSplitOptions.RemoveEmptyEntries);
                         }
                         queries.SelectTheTotalSoldInARangeBetweenTwoDates(startDate, endDate);
@@ -123,6 +123,16 @@ namespace ConsoleInterface
                             quantity = Console.ReadLine();
                         }
                         queries.SelectTheMedicinesThatAreLowOnStock(parsedQuantity);
+                        break;
+                    case 8:
+                        Console.WriteLine("You will be given a list of the sold medicine/s if there were any sold:");
+                        queries.SelectTotalSoldMedicineForAllTimes();
+                        break;
+                    case 9:
+                        var doctors = queries.GetAllDoctors();
+                        Console.WriteLine($"All doctors in the register: {string.Join(", ", doctors)}, choose one whose prescribed medicine/s you would like to see");
+                        string doctor = Console.ReadLine();
+                        queries.SelectAllTheMedicinesPrescribedByGivenDoctor(doctor);
                         break;
                     case 0:
                         Console.WriteLine("Exiting the program....");
