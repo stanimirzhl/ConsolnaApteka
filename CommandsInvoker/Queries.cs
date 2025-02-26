@@ -8,7 +8,7 @@ namespace CommandsInvoker
 
         public Queries(string database)
         {
-            connection = $@"Server=(localdb)\ProjectModels;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;";
+            connection = $@"Server=(localdb)\ProjectModels;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
         }
 
         public void SelectAllMedicineByGivenCategory(string categoryName)
@@ -151,7 +151,7 @@ namespace CommandsInvoker
             {
                 sqlConnection.Open();
                 string queryTotal = "SELECT c.category_name, SUM(pm.quantity * m.price) AS total_category_sales FROM sales AS s JOIN prescriptions AS p ON s.prescription_id = p.id JOIN prescription_medicines AS pm ON p.id = pm.prescription_id JOIN medicines AS m ON pm.medicine_id = m.id JOIN categories AS c ON m.category_id = c.id WHERE s.sale_date BETWEEN @startDate AND @endDate GROUP BY c.category_name ORDER BY total_category_sales DESC;";
-                string queryForMedicine = "SELECT c.category_name, m.medicine_name, pm.dosage,  pm.quantity,  m.price, pm.quantity * m.price) AS total_medicine_sales FROM sales AS s JOIN prescriptions AS p ON s.prescription_id = p.id JOIN prescription_medicines AS pm ON p.id = pm.prescription_id JOIN medicines AS m ON pm.medicine_id = m.id JOIN categories AS c ON m.category_id = c.id WHERE s.sale_date BETWEEN @startDate AND @endDate ORDER BY total_medicine_sales DESC;";
+                string queryForMedicine = "SELECT c.category_name, m.medicine_name, pm.dosage,  pm.quantity,  m.price, (pm.quantity * m.price) AS total_medicine_sales FROM sales AS s JOIN prescriptions AS p ON s.prescription_id = p.id JOIN prescription_medicines AS pm ON p.id = pm.prescription_id JOIN medicines AS m ON pm.medicine_id = m.id JOIN categories AS c ON m.category_id = c.id WHERE s.sale_date BETWEEN @startDate AND @endDate ORDER BY total_medicine_sales DESC;";
                 using (SqlCommand commandTotalForPeriod = new SqlCommand(queryTotal, sqlConnection))
                 {
                     commandTotalForPeriod.Parameters.AddWithValue("@startDate", startDate);
@@ -164,10 +164,12 @@ namespace CommandsInvoker
                         {
                             Console.WriteLine($"Sales Report from {startDate.ToString("yyyy-MM-dd")} to {endDate.ToString("yyyy-MM-dd")}:");
 
+                            double maxAmount = 0;
                             while (readerTotalSales.Read())
                             {
                                 string categoryName = readerTotalSales["category_name"].ToString();
                                 double totalCategorySales = (double)readerTotalSales.GetDecimal(1);
+                                maxAmount += totalCategorySales;
 
                                 Console.WriteLine($"Category: {categoryName}");
                                 Console.WriteLine($"Total Sales for {categoryName}: {totalCategorySales:C}");
@@ -188,12 +190,41 @@ namespace CommandsInvoker
                                             Console.WriteLine($"{medicineName} ({dosage}) - Quantity: {quantity} - Price: {price:C} - Total Sales: {totalSales:C}");
                                         }
                                     }
+                                    Console.WriteLine();
                                 }
                             }
+                            Console.WriteLine($"The whole sold amount: {maxAmount}" + "\n");
                         }
                     }
 
 
+                }
+            }
+        }
+
+        public void SelectTheMedicinesThatAreLowOnStock(int quantity)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+                string query = "select medicine_name, stock_quantity from medicines where stock_quantity < @quantity order by stock_quantity asc;";
+                using (SqlCommand command = new SqlCommand(query, sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@quantity", quantity);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            Console.WriteLine("No medicine/s found with quantity under the given one, try again with higher quantity or new command." + "\n");
+                            return;
+                        }
+                        Console.WriteLine("Medicines with less quantity than the given one:");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"Medicine's name: {reader["medicine_name"]}, Quantity: {reader["stock_quantity"]}");
+                        }
+                    }
+                    Console.WriteLine();
                 }
             }
         }

@@ -113,6 +113,17 @@ namespace ConsoleInterface
                         }
                         queries.SelectTheTotalSoldInARangeBetweenTwoDates(startDate, endDate);
                         break;
+                    case 7:
+                        Console.WriteLine("Write the quantity to see which medicine/s has/ve less than the given one:");
+                        string quantity = Console.ReadLine();
+                        int parsedQuantity;
+                        while (!int.TryParse(quantity, out parsedQuantity))
+                        {
+                            Console.WriteLine("Invalid type. Try with a number");
+                            quantity = Console.ReadLine();
+                        }
+                        queries.SelectTheMedicinesThatAreLowOnStock(parsedQuantity);
+                        break;
                     case 0:
                         Console.WriteLine("Exiting the program....");
                         return;
