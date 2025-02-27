@@ -465,5 +465,83 @@ namespace CommandsInvoker
             }
             return saleDates;
         }
+        public List<string> GetAllTables()
+        {
+            var tableNames = new List<string>();
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+                string query = "select table_name from information_schema.tables where table_name <> 'prescription_medicines'";
+                using (SqlCommand command = new SqlCommand(query, sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            tableNames.Add(reader[0].ToString());
+                        }
+                    }
+                }
+            }
+            return tableNames;
+        }
+
+        public void InsertCategory(string name, string description)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand check = new SqlCommand("select count(*) from categories where category_name = @name", sqlConnection))
+                {
+                    check.Parameters.AddWithValue("@name", name);
+                    int count = (int)check.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Category already exists, try with new name or new command." + "\n");
+                        return;
+                    }
+                }
+                using (SqlCommand insert = new SqlCommand("insert into categories (category_name, category_description) values (@name, @description)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@name", name);
+                    insert.Parameters.AddWithValue("@description", description);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Category added successfully!" + "\n");
+            }
+        }
+        public void InsertManufacturer(string name, string website, string email, string phone)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand check = new SqlCommand("select count(*) from manufacturers where manufacturer_name = @name or email = @email or phone = @phone or @website", sqlConnection))
+                {
+                    check.Parameters.AddWithValue("@Name", name);
+                    check.Parameters.AddWithValue("@Email", email);
+                    check.Parameters.AddWithValue("@Phone", phone);
+                    int count = (int)check.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Manufacturer already exists, try with different name, email, phone or website or new command." + "\n");
+                        return;
+                    }
+                }
+                using (SqlCommand insert = new SqlCommand("insert into manufacturers (manufacturer_name, website, email, phone) VALUES (@name, @website, @email, @phone)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@name", name);
+                    insert.Parameters.AddWithValue("@website", website);
+                    insert.Parameters.AddWithValue("@email", email);
+                    insert.Parameters.AddWithValue("@phone", phone);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Manufacturer added successfully!" + "\n");
+            }
+        }
+
     }
 }

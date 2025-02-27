@@ -137,11 +137,40 @@ namespace ConsoleInterface
                     case 10:
                         queries.SelectTheMostPrescribedMedicine();
                         break;
-                        case 11:
+                    case 11:
                         var medicines = queries.GetAllMedicines();
-                        Console.WriteLine($"All available medicines in the register: {string.Join(", ", medicines)}, choose one to see who has bought it:");
+                        Console.WriteLine($"All available medicines in the register: {string.Join(", ", medicines)}, choose one to see who has bought it:" + "\n");
                         string medicine = Console.ReadLine();
                         queries.SelectAllThePatientsWhoGotTheSpecificMedicine(medicine);
+                        break;
+                    case 12:
+                        Console.WriteLine($"Choose the table you want to add new data to: {string.Join(", ", queries.GetAllTables())}" + "\n");
+                        string table = Console.ReadLine();
+                        switch (table)
+                        {
+                            case "categories":
+                                Console.WriteLine("Write category name:");
+                                string categoryName = Console.ReadLine();
+                                Console.WriteLine("Description of the new category:");
+                                string description = Console.ReadLine();
+                                queries.InsertCategory(categoryName, description);
+                                break;
+                            case "manufacturers":
+                                break;
+                            case "doctors":
+                                break;
+                            case "patients":
+                                break;
+                            case "prescriptions":
+                                break;
+                            case "medicines":
+                                break;
+                            case "sales":
+                                break;
+                            default:
+                                Console.WriteLine("No such table, try again with a valid table name!" + "\n");
+                                break;
+                        }
                         break;
                     case 0:
                         Console.WriteLine("Exiting the program....");
