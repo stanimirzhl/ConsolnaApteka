@@ -8,7 +8,7 @@ namespace CommandsInvoker
 
         public Queries(string database)
         {
-            connection = $@"Server=(localdb)\ProjectModels;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+            connection = $@"Server=.\SQLEXPRESS;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
         }
 
         public void SelectAllMedicineByGivenCategory(string categoryName)
@@ -291,6 +291,58 @@ namespace CommandsInvoker
             }
         }
 
+        public void SelectTheMostPrescribedMedicine()
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+                string query = "select top(1) m.medicine_name, count(pm.medicine_id) as prescription_count from prescription_medicines as pm join medicines as m on pm.medicine_id = m.id group by m.medicine_name order by prescription_count desc;";
+                using (SqlCommand command = new SqlCommand(query, sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            Console.WriteLine("No medicine/s has/ve been yet prescribed, try again later or try new command." + "\n");
+                            return;
+                        }
+                        Console.WriteLine("The most prescribed medicine:");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"Medicine's name: {reader["medicine_name"]}, Count of prescriptions: {reader["prescription_count"]}");
+                        }
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
+
+        public void SelectAllThePatientsWhoGotTheSpecificMedicine(string medicine)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+                string query = "select pt.patient_name,pt.date_of_birth ,pt.email, pt.phone, p.prescription_date, count(*) as prescription_count from patients as pt join prescriptions as p on pt.id = p.patient_id join prescription_medicines as pm on p.id = pm.prescription_id join medicines as m on pm.medicine_id = m.id group by pt.patient_name,pt.date_of_birth ,pt.email, pt.phone, m.medicine_name, p.prescription_date having m.medicine_name = @medicine;";
+                using (SqlCommand command = new SqlCommand(query, sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@medicine", medicine);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            Console.WriteLine("The desired medicine does not exist or no one has bought it yet, try again later or try new command." + "\n");
+                            return;
+                        }
+                        Console.WriteLine("Patient/s who bought the specific medicine:");
+                        while (reader.Read())
+                        {
+                            Console.WriteLine($"Patient's name: {reader["patient_name"]}, Date of birth: {reader.GetDateTime(1).ToString("yyyy-MM-dd")}, Patient's email: {reader["email"]}, Patient's phone number: {reader["phone"]}, Prescription date: {reader.GetDateTime(4).ToString("yyyy-MM-dd")}, Prescription count: {reader["prescription_count"]}");
+                        }
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
 
         public List<string> GetAllCategories()
         {
@@ -372,6 +424,26 @@ namespace CommandsInvoker
                 }
             }
             return doctors;
+        }
+        public List<string> GetAllMedicines()
+        {
+            var medicines = new List<string>();
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+                string query = "select medicine_name from medicines";
+                using (SqlCommand command = new SqlCommand(query, sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            medicines.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            return medicines;
         }
         public List<string> GetAllSaleDates()
         {

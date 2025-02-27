@@ -7,7 +7,7 @@ namespace Database
     {
         public static void CreateDb(string databaseName, bool flag)
         {
-            string masterConnectionString = @"Server=(localdb)\ProjectModels;Database=master;Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+            string masterConnectionString = @"Server=.\SQLEXPRESS;Database=master;Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
 
             using (SqlConnection masterConnection = new SqlConnection(masterConnectionString))
             {

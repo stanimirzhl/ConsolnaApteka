@@ -134,6 +134,15 @@ namespace ConsoleInterface
                         string doctor = Console.ReadLine();
                         queries.SelectAllTheMedicinesPrescribedByGivenDoctor(doctor);
                         break;
+                    case 10:
+                        queries.SelectTheMostPrescribedMedicine();
+                        break;
+                        case 11:
+                        var medicines = queries.GetAllMedicines();
+                        Console.WriteLine($"All available medicines in the register: {string.Join(", ", medicines)}, choose one to see who has bought it:");
+                        string medicine = Console.ReadLine();
+                        queries.SelectAllThePatientsWhoGotTheSpecificMedicine(medicine);
+                        break;
                     case 0:
                         Console.WriteLine("Exiting the program....");
                         return;
