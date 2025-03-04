@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.ComponentModel.Design;
 
 namespace CommandsInvoker
 {
@@ -8,7 +9,8 @@ namespace CommandsInvoker
 
         public Queries(string database)
         {
-            connection = $@"Server=.\SQLEXPRESS;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+            //connection = $@"Server=.\SQLEXPRESS;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
+            connection = $@"Server=(localdb)\ProjectModels;Database={database};Integrated Security=True;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True";
         }
 
         public void SelectAllMedicineByGivenCategory(string categoryName)
@@ -37,7 +39,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectAllMedicineByGivenManufacturerName(string manName)
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -206,7 +207,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectTheMedicinesThatAreLowOnStock(int quantity)
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -233,7 +233,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectTotalSoldMedicineForAllTimes()
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -263,7 +262,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectAllTheMedicinesPrescribedByGivenDoctor(string doctor)
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -290,7 +288,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectTheMostPrescribedMedicine()
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -316,7 +313,6 @@ namespace CommandsInvoker
                 }
             }
         }
-
         public void SelectAllThePatientsWhoGotTheSpecificMedicine(string medicine)
         {
             using (var sqlConnection = new SqlConnection(connection))
@@ -364,7 +360,6 @@ namespace CommandsInvoker
             }
             return categories;
         }
-
         public List<string> GetAllManufacturers()
         {
             var manufacturers = new List<string>();
@@ -486,7 +481,105 @@ namespace CommandsInvoker
             return tableNames;
         }
 
-        public void InsertCategory(string name, string description)
+        public int GetDoctorId(string name)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand command = new SqlCommand("select id from doctors where doctor_name = @name", sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+
+                    return (int)command.ExecuteScalar();
+                }
+            }
+        }
+        public int GetPatientId(string name)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand command = new SqlCommand("select id from patients where patient_name = @name", sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+
+                    return (int)command.ExecuteScalar();
+                }
+            }
+        }
+        public int GetCategoryId(string name)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand command = new SqlCommand("select id from categories where category_name = @name", sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+
+                    return (int)command.ExecuteScalar();
+                }
+            }
+        }
+        public int GetManufacturerId(string name)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand command = new SqlCommand("select id from manufacturers where manufacturer_name = @name", sqlConnection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+
+                    return (int)command.ExecuteScalar();
+                }
+            }
+        }
+        public List<int> ShowUnBoughtPrescriptionsAndTheirMedicines()
+        {
+            List<int> ids = new List<int>();
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand command = new SqlCommand("select p.id, p.prescription_date, m.medicine_name, pm.dosage, pm.quantity\r\nfrom prescriptions as p\r\nleft join sales as s on p.id = s.prescription_id\r\nleft join prescription_medicines as pm on p.id = pm.prescription_id\r\nleft join medicines as m on pm.medicine_id = m.id\r\nwhere s.prescription_id is null and m.medicine_name is not null;", sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            Console.WriteLine("No prescriptions found.");
+                            return new List<int>() {0};
+                        }
+                        Dictionary<int, (string date, List<string> medicine)> prescriptions = new Dictionary<int, (string, List<string>)>();
+                        while (reader.Read())
+                        {
+                            if (!prescriptions.ContainsKey((int)reader[0]))
+                            {
+                                prescriptions[(int)reader[0]] = (reader.GetDateTime(1).ToString("yyyy-MM-dd"), new List<string>());
+                            }
+                            prescriptions[(int)reader[0]].medicine.Add($"Medicine name: {reader["medicine_name"].ToString()},Dosage: {reader["dosage"].ToString()},Quantity: {reader["quantity"].ToString()}"); 
+                        }
+                        foreach (var p in prescriptions)
+                        {
+                            ids.Add(p.Key);
+                            Console.WriteLine($"Prescription id: {p.Key}, Prescription date: {p.Value.date}");
+                            foreach (var m in p.Value.medicine)
+                            {
+                                Console.WriteLine(m);
+                            }
+                            Console.WriteLine(new string('-', 25));
+                        }
+                        Console.WriteLine();
+                    }
+                }
+            }
+            return ids;
+        }
+
+        public void AddCategory(string name, string description)
         {
             using (var sqlConnection = new SqlConnection(connection))
             {
@@ -512,7 +605,7 @@ namespace CommandsInvoker
                 Console.WriteLine("Category added successfully!" + "\n");
             }
         }
-        public void InsertManufacturer(string name, string website, string email, string phone)
+        public void AddManufacturer(string name, string website, string email, string phone)
         {
             using (var sqlConnection = new SqlConnection(connection))
             {
@@ -520,9 +613,9 @@ namespace CommandsInvoker
 
                 using (SqlCommand check = new SqlCommand("select count(*) from manufacturers where manufacturer_name = @name or email = @email or phone = @phone or @website", sqlConnection))
                 {
-                    check.Parameters.AddWithValue("@Name", name);
-                    check.Parameters.AddWithValue("@Email", email);
-                    check.Parameters.AddWithValue("@Phone", phone);
+                    check.Parameters.AddWithValue("@name", name);
+                    check.Parameters.AddWithValue("@email", email);
+                    check.Parameters.AddWithValue("@phone", phone);
                     int count = (int)check.ExecuteScalar();
                     if (count > 0)
                     {
@@ -540,6 +633,129 @@ namespace CommandsInvoker
                 }
 
                 Console.WriteLine("Manufacturer added successfully!" + "\n");
+            }
+        }
+        public void AddDoctor(string name, string specialty, string email, string phone)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand check = new SqlCommand("select count(*) from doctors where doctor_name = @name or email = @email or phone = @phone", sqlConnection))
+                {
+                    check.Parameters.AddWithValue("@name", name);
+                    check.Parameters.AddWithValue("@email", email);
+                    check.Parameters.AddWithValue("@phone", phone);
+                    int count = (int)check.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Doctor already exists, try with different name, email, phone or new command." + "\n");
+                        return;
+                    }
+                }
+                using (SqlCommand insert = new SqlCommand("insert into doctors (doctor_name, specialty, email, phone) VALUES (@name, @specialty, @email, @phone)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@name", name);
+                    insert.Parameters.AddWithValue("@specialty", specialty);
+                    insert.Parameters.AddWithValue("@email", email);
+                    insert.Parameters.AddWithValue("@phone", phone);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Doctor added successfully!" + "\n");
+            }
+        }
+        public void AddPatient(string name, DateTime date_of_birth, string email, string phone)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand check = new SqlCommand("select count(*) from patients where patient_name = @name or email = @email or phone = @phone", sqlConnection))
+                {
+                    check.Parameters.AddWithValue("@name", name);
+                    check.Parameters.AddWithValue("@email", email);
+                    check.Parameters.AddWithValue("@phone", phone);
+                    int count = (int)check.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Patient already exists, try with different name, email, phone or new command." + "\n");
+                        return;
+                    }
+                }
+                using (SqlCommand insert = new SqlCommand("insert into patients (patient_name, date_of_birth, email, phone) VALUES (@name, @date, @email, @phone)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@name", name);
+                    insert.Parameters.AddWithValue("@date", date_of_birth);
+                    insert.Parameters.AddWithValue("@email", email);
+                    insert.Parameters.AddWithValue("@phone", phone);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Patient added successfully!" + "\n");
+            }
+        }
+        public void AddPrescription(int doctor_id, int patient_id, DateTime date_of_prescription)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand insert = new SqlCommand("insert into prescriptions (doctor_id, prescription_date,patient_id) VALUES (@doctor_id, @date, @patient_id)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@doctor_id", doctor_id);
+                    insert.Parameters.AddWithValue("@date", date_of_prescription);
+                    insert.Parameters.AddWithValue("@patient_id", patient_id);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Prescription added successfully!" + "\n");
+            }
+        }
+        public void AddMedicine(string medicine_name, string description, double price, int quantity, int category_id, int manufacturer_id)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand check = new SqlCommand("select count(*) from medicines where medicine_name = @name or description = @description", sqlConnection))
+                {
+                    check.Parameters.AddWithValue("@name", medicine_name);
+                    check.Parameters.AddWithValue("@description", description);
+                    int count = (int)check.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        Console.WriteLine("Medicine already exists, try with new name or description or new command." + "\n");
+                        return;
+                    }
+                }
+                using (SqlCommand insert = new SqlCommand("insert into medicines (medicine_name, description, price, stock_quantity,category_id,manufacturer_id) values (@name, @description, @price, @quantity,@category_id,@manufacturer_id)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@name", medicine_name);
+                    insert.Parameters.AddWithValue("@description", description);
+                    insert.Parameters.AddWithValue("@price", price);
+                    insert.Parameters.AddWithValue("@quantity", quantity);
+                    insert.Parameters.AddWithValue("@category_id", category_id);
+                    insert.Parameters.AddWithValue("@manufacturer_id", manufacturer_id);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Medicine added successfully!" + "\n");
+            }
+        }
+        public void AddSale(int id)
+        {
+            using (var sqlConnection = new SqlConnection(connection))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand insert = new SqlCommand("insert into sales (prescription_id) values (@id)", sqlConnection))
+                {
+                    insert.Parameters.AddWithValue("@id", id);
+                    insert.ExecuteNonQuery();
+                }
+
+                Console.WriteLine("Sale added successfully!" + "\n");
             }
         }
 

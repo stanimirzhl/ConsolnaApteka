@@ -153,19 +153,113 @@ namespace ConsoleInterface
                                 string categoryName = Console.ReadLine();
                                 Console.WriteLine("Description of the new category:");
                                 string description = Console.ReadLine();
-                                queries.InsertCategory(categoryName, description);
+                                queries.AddCategory(categoryName, description);
                                 break;
                             case "manufacturers":
+                                Console.WriteLine("Write manufacturer name:");
+                                string manufacturerName = Console.ReadLine();
+                                Console.WriteLine("Website of the new manufacturer:");
+                                string website = Console.ReadLine();
+                                Console.WriteLine("Email of the new manufacturer:");
+                                string email = Console.ReadLine();
+                                Console.WriteLine("Phone number of the new manufacturer:");
+                                string phoneNumber = Console.ReadLine();
+                                queries.AddManufacturer(manufacturerName, website, email, phoneNumber);
                                 break;
                             case "doctors":
+                                Console.WriteLine("Write doctor name:");
+                                string doctorName = Console.ReadLine();
+                                Console.WriteLine("Specialty of the new doctor:");
+                                string specialty = Console.ReadLine();
+                                Console.WriteLine("Email of the new doctor:");
+                                string emailOfTheNewDoctor = Console.ReadLine();
+                                Console.WriteLine("Phone number of the new doctor:");
+                                string doctorNumber = Console.ReadLine();
+                                queries.AddDoctor(doctorName, specialty, emailOfTheNewDoctor, doctorNumber);
                                 break;
                             case "patients":
+                                Console.WriteLine("Write patient name:");
+                                string patientName = Console.ReadLine();
+                                Console.WriteLine("Date of birth of the new patient:");
+                                string dateOfBirth = Console.ReadLine();
+                                DateTime parsedBirthDate;
+                                while (!DateTime.TryParseExact(dateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedBirthDate))
+                                {
+                                    Console.WriteLine("Invalid format, please keep this one yyyy-MM-dd.");
+                                    dateOfBirth = Console.ReadLine();
+                                }
+                                Console.WriteLine("Email of the new patient:");
+                                string emailOfThePatient = Console.ReadLine();
+                                Console.WriteLine("Phone number of the new patient:");
+                                string patientNumber = Console.ReadLine();
+                                queries.AddPatient(patientName, parsedBirthDate, emailOfThePatient, patientNumber);
                                 break;
                             case "prescriptions":
+                                Console.WriteLine($"All doctors in the register: {string.Join(", ", queries.GetAllDoctors())}, choose one you would like to add into the prescription");
+                                string doctorToFind = Console.ReadLine();
+                                doctorToFind = $"Dr. {doctorToFind}";
+                                while (!queries.GetAllDoctors().Contains(doctorToFind))
+                                {
+                                    Console.WriteLine($"Inexistent doctor name, try again with the given ones: {string.Join(", ", queries.GetAllDoctors())}");
+                                    doctorToFind = Console.ReadLine();
+                                    doctorToFind = $"Dr. {doctorToFind}";
+                                }
+                                Console.WriteLine();
+                                Console.WriteLine($"All patients in the register: {string.Join(", ", queries.GetAllPatients())}, choose one you would like to add into the prescription");
+                                string patientToFind = Console.ReadLine();
+                                while (!queries.GetAllPatients().Contains(patientToFind))
+                                {
+                                    Console.WriteLine($"Inexistent patient name, try again with the given ones: {string.Join(", ", queries.GetAllPatients())}");
+                                    patientToFind = Console.ReadLine();
+                                }
+                                Console.WriteLine();
+                                Console.WriteLine("Date of the prescription:");
+                                string dateOfPrescription = Console.ReadLine();
+                                DateTime parsedPrescription;
+                                while (!DateTime.TryParseExact(dateOfPrescription, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedPrescription))
+                                {
+                                    Console.WriteLine("Invalid format, please keep this one yyyy-MM-dd.");
+                                    dateOfPrescription = Console.ReadLine();
+                                }
+                                Console.WriteLine();
+                                queries.AddPrescription(queries.GetDoctorId(doctorToFind), queries.GetPatientId(patientToFind), parsedPrescription);
                                 break;
                             case "medicines":
+                                Console.WriteLine("Write medicine name:");
+                                string medicineName = Console.ReadLine();
+                                Console.WriteLine("Description of the new medicine:");
+                                string medicineDescription = Console.ReadLine();
+                                Console.WriteLine("Price of the new medicine:");
+                                double price = double.Parse(Console.ReadLine());
+                                Console.WriteLine("Quantity of the new medicine:");
+                                int quantityMedicine = int.Parse(Console.ReadLine());
+                                Console.WriteLine($"All categories in the register: {string.Join(", ", queries.GetAllCategories())}, choose one you would like to add into the medicine");
+                                string categoryToFind = Console.ReadLine();
+                                while (!queries.GetAllCategories().Contains(categoryToFind))
+                                {
+                                    Console.WriteLine($"Inexistent category name, try again with the given ones: {string.Join(", ", queries.GetAllCategories())}");
+                                    categoryToFind = Console.ReadLine();
+                                }
+                                Console.WriteLine();
+                                Console.WriteLine($"All manufacturers in the register: {string.Join(", ", queries.GetAllManufacturers())}, choose one you would like to add into the medicine");
+                                string manufacturerToFind = Console.ReadLine();
+                                while (!queries.GetAllManufacturers().Contains(manufacturerToFind))
+                                {
+                                    Console.WriteLine($"Inexistent manufacturer name, try again with the given ones: {string.Join(", ", queries.GetAllManufacturers())}");
+                                    manufacturerName = Console.ReadLine();
+                                }
+                                Console.WriteLine();
+                                queries.AddMedicine(medicineName, medicineDescription,price, quantityMedicine, queries.GetCategoryId(categoryToFind), queries.GetManufacturerId(manufacturerToFind));
                                 break;
                             case "sales":
+                                List<int> ids = queries.ShowUnBoughtPrescriptionsAndTheirMedicines();
+                                Console.WriteLine($"Choose an Id from the given prescriptions to buy:");
+                                int id = int.Parse(Console.ReadLine());
+                                while (!ids.Contains(id))
+                                {
+                                    id = int.Parse(Console.ReadLine());
+                                }
+                                queries.AddSale(id);
                                 break;
                             default:
                                 Console.WriteLine("No such table, try again with a valid table name!" + "\n");
