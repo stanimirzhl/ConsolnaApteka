@@ -34,6 +34,20 @@ namespace ConsoleInterface
             }
             Console.WriteLine("Below you will be given list of commands you can perform on the database. You can perform them until you write 0." + "\n");
 
+            Console.WriteLine("0. Exiting the Program");
+            Console.WriteLine("1. View All Medicines by Category");
+            Console.WriteLine("2. View All Medicines by Manufacturer");
+            Console.WriteLine("3. View Prescriptions for a Specific Patient");
+            Console.WriteLine("4. View Sales for a Specific Date");
+            Console.WriteLine("5. View Total Spendings by a Specific Patient");
+            Console.WriteLine("6. View Total Sales Within a Date Range");
+            Console.WriteLine("7. View Medicines with Low Stock");
+            Console.WriteLine("8. View Total Sold Medicines");
+            Console.WriteLine("9. View Medicines Prescribed by a Specific Doctor");
+            Console.WriteLine("10. View the Most Prescribed Medicine");
+            Console.WriteLine("11. View Patients Who Bought a Specific Medicine");
+            Console.WriteLine("12. Add New Data to a Table" + "\n");
+
             int number;
             while (true)
             {
@@ -67,7 +81,6 @@ namespace ConsoleInterface
                         }
                         queries.SelectAllMedicineByGivenManufacturerName(manufacturer);
                         break;
-
                     case 3:
                         var patients = queries.GetAllPatients();
                         Console.WriteLine($"All patients in the register: {string.Join(", ", patients)}, choose one whose prescription you would like to see");
@@ -144,7 +157,8 @@ namespace ConsoleInterface
                         queries.SelectAllThePatientsWhoGotTheSpecificMedicine(medicine);
                         break;
                     case 12:
-                        Console.WriteLine($"Choose the table you want to add new data to: {string.Join(", ", queries.GetAllTables())}" + "\n");
+                        Console.WriteLine($"Choose the table you want to add new data to:");
+                        Console.WriteLine(string.Join("\n", queries.GetAllTables())); 
                         string table = Console.ReadLine();
                         switch (table)
                         {
@@ -213,7 +227,7 @@ namespace ConsoleInterface
                                     patientToFind = Console.ReadLine();
                                 }
                                 Console.WriteLine();
-                                Console.WriteLine("Date of the prescription:");
+                                Console.WriteLine("Date of the prescription format (yyyy-MM-dd):");
                                 string dateOfPrescription = Console.ReadLine();
                                 DateTime parsedPrescription;
                                 while (!DateTime.TryParseExact(dateOfPrescription, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedPrescription))
@@ -222,7 +236,53 @@ namespace ConsoleInterface
                                     dateOfPrescription = Console.ReadLine();
                                 }
                                 Console.WriteLine();
-                                queries.AddPrescription(queries.GetDoctorId(doctorToFind), queries.GetPatientId(patientToFind), parsedPrescription);
+                                int prescriptionId = queries.AddPrescription(queries.GetDoctorId(doctorToFind), queries.GetPatientId(patientToFind), parsedPrescription);
+                                
+                                int medicineQuantity = 0;
+                                List<(int, string, int)> prescriptionDescription = new List<(int, string, int)>(); 
+
+                                Console.WriteLine("Now, choose from the existing medicines in the pharmacy the ones that need to be included in the prescription until the command 'Enough':");
+
+                                Console.WriteLine($"All medicines in the register: {string.Join(", ", queries.GetAllMedicines())}, choose one you would like to add into the prescription, write in the format (Medicine_Name-Dosage-Quantity), the dosage should be written as (integer)mg:");
+
+                                while (true)
+                                {
+                                    string[] values = Console.ReadLine().Split("-", StringSplitOptions.RemoveEmptyEntries);
+                                    if (values[0] == "Enough")
+                                    {
+                                        break;
+                                    }
+                                    if (values.Length == 3)
+                                    {
+                                        if (!queries.GetAllMedicines().Contains(values[0]))
+                                        {
+                                            Console.WriteLine($"Medicine {values[0]} does not exist, try again with these: {string.Join(", ", queries.GetAllMedicines())}");
+                                        }
+                                        else
+                                        {
+                                            medicineQuantity = queries.GetMedicineQuantity(values[0]);
+                                            if (medicineQuantity < int.Parse(values[2]))
+                                            {
+                                                Console.WriteLine("There isn't enough quantity for the desired medicine, try again later or with less quantity!");
+                                            }
+                                            else
+                                            {
+                                                prescriptionDescription.Add((queries.GetMedicineId(values[0]), values[1], int.Parse(values[2])));
+                                                Console.WriteLine($"Choose again: {string.Join(", ", queries.GetAllMedicines())} or exit with the command 'Enough':");
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Invalid format, please keep the (Medicine_Name-Dosage-Quantity)");
+                                    }
+                                    
+                                }
+
+                                foreach (var med in prescriptionDescription)
+                                {
+                                    queries.AddPrescriptionMedicine(prescriptionId, med.Item1, med.Item2, med.Item3);
+                                }
                                 break;
                             case "medicines":
                                 Console.WriteLine("Write medicine name:");
@@ -257,6 +317,7 @@ namespace ConsoleInterface
                                 int id = int.Parse(Console.ReadLine());
                                 while (!ids.Contains(id))
                                 {
+                                    Console.WriteLine($"Try again with an Id that exists:");
                                     id = int.Parse(Console.ReadLine());
                                 }
                                 queries.AddSale(id);
